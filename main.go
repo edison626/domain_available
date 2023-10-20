@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	fileName        = "domains.txt"    // 文件名
-	requestInterval = 10 * time.Second // 监控间隔
-	maxResponseTime = 2 * time.Second  // 响应时间阈值
+	fileName        = "domains.txt"     // 文件名
+	requestInterval = 300 * time.Second // 监控间隔
+	maxResponseTime = 2 * time.Second   // 响应时间阈值
 )
 
 func sendTelegramMessage(botToken, chatID, message string) error {
