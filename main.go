@@ -52,8 +52,17 @@ func monitorDomain(domain string, ip string) {
 		domain = "https://" + domain + "/member/banner/" // 默认添加http前缀，或者您可以选择https
 	}
 
+	//client := &http.Client{} // 创建新的 HTTP 客户端
+
 	for {
-		resp, err := http.Get(domain)
+		client := &http.Client{}
+		req, err := http.NewRequest("GET", domain, nil)
+		if err != nil {
+			fmt.Printf("Error fetching %s: %s\n", domain, err)
+			time.Sleep(requestInterval)
+			continue
+		}
+		resp, err := client.Do(req) // 使用 client 发起请求
 		if err != nil {
 			fmt.Printf("Error fetching %s: %s\n", domain, err)
 			time.Sleep(requestInterval)
@@ -74,29 +83,14 @@ func monitorDomain(domain string, ip string) {
 			log.Fatalf("Error decoding response: %v", err)
 		}
 
-		if !response.Status && response.Data == "1027" {
-			fmt.Println("警告：内容与期望不匹配! status:false,data:1027")
-			fmt.Printf("[服务器: %s] 警告 : 域名 %s , Status= %t , Data= %s\n ", ip, domain, response.Status, response.Data)
+		if response.Status {
+			fmt.Printf("[服务器: %s] 警告:Status 变 true - 域名 %s , Status= %t\n ", ip, domain, response.Status)
 			//纸飞机报警
 			message := fmt.Sprintf("[服务器: %s] 警告 : 域名 %s , Status= %t , Data= %s\n ", ip, domain, response.Status, response.Data)
 			sendTelegramMessage(botToken, chatID, message)
 		} else {
-			fmt.Printf("[服务器: %s] 正常 : 域名 %s , Status= %t , Data= %s\n ", ip, domain, response.Status, response.Data)
+			fmt.Printf("[服务器: %s] 正常 : 域名 %s , Status= %t\n ", ip, domain, response.Status)
 		}
-
-		// if response.StatusCode != http.StatusOK {
-		// 	fmt.Printf("[服务器: %s] 告警: 响应 %d 域名 %s\n", ip, response.StatusCode, domain)
-		// 	//message := fmt.Sprintf("[服务器: %s] 告警: 响应 %d 域名 %s\n", ip, response.StatusCode, domain)
-		// 	//sendTelegramMessage(botToken, chatID, message)
-		// } else if duration > maxResponseTime {
-		// 	fmt.Printf("[服务器: %s] 告警: 域名 %s 响应时间已超过 %v ( 响应: %v)\n", ip, domain, maxResponseTime, duration)
-		// 	//message := fmt.Sprintf("[服务器: %s] 告警: 域名 %s 响应时间已超过 %v ( 响应: %v)\n", ip, domain, maxResponseTime, duration)
-		// 	//sendTelegramMessage(botToken, chatID, message)
-		// } else {
-		// 	fmt.Printf("[服务器: %s] 域名 %s 正常. Response code: %d, Response time: %v\n", ip, domain, response.StatusCode, duration)
-		// 	//message := fmt.Sprintf("[服务器: %s] 域名 %s 正常. Response code: %d, Response time: %v\n", ip, domain, response.StatusCode, duration)
-		// 	//sendTelegramMessage(botToken, chatID, message)
-		// }
 
 		time.Sleep(requestInterval)
 	}
