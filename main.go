@@ -49,7 +49,7 @@ func monitorDomain(domain string, ip string) {
 	chatID := "-972839729"
 
 	if !strings.HasPrefix(domain, "http://") && !strings.HasPrefix(domain, "https://") {
-		domain = "https://" + domain + "/member/banner/" // 默认添加http前缀，或者您可以选择https
+		domain = "https://" + domain + "/member/banner/" // 默认添加http前缀，或者您可以选择https /member/banner/
 	}
 
 	//client := &http.Client{} // 创建新的 HTTP 客户端
@@ -75,6 +75,8 @@ func monitorDomain(domain string, ip string) {
 
 		if resp.StatusCode != http.StatusOK {
 			log.Fatalf("Error status code: %d", resp.StatusCode)
+			message := fmt.Sprintf("Error status code: %d", resp.StatusCode)
+			sendTelegramMessage(botToken, chatID, message)
 		}
 
 		var response Response
